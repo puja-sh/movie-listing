@@ -1,17 +1,18 @@
-import React, { forwardRef, MutableRefObject, Ref, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import styled from "styled-components";
 import Layout from "../../utils/Layout";
-import Loader from "../../utils/Loader";
 import { MovieResponse } from "../../def/response";
 import MovieCard from "./MovieCard";
 
 type IProps = {
     moviesByKeys: { [year: number]: MovieResponse[] }
-    movies: MovieResponse[];
-    hasMore: boolean;
-    setCurrentPage: (prevPage: (prevPage: number) => number) => void;
     sortedYears: number[];
     selectedGenreIds: number[]
+    fetchResponse: (currentYear: number) => void;
+    setYears: Dispatch<SetStateAction<{ topYear: number, bottomYear: number }>>;
+    getGenreKey: (selected: number[]) => any;
+    setLoader: Dispatch<SetStateAction<{ showTopLoader: boolean, showBottomLoader: boolean }>>;
+    moviesByGenre: { [genres: string]: { [year: number]: MovieResponse[] } };
 }
 
 const Wrapper = styled.div`
@@ -21,12 +22,13 @@ const Wrapper = styled.div`
 `;
 
 const ScrollContainer = styled.div`
+  overflow: scroll;
 `;
 
 const Cards = styled.div`
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 80px;
+  margin-bottom: 70px;
 `;
 
 const YearHead = styled.div`
@@ -37,18 +39,73 @@ const YearHead = styled.div`
   margin-bottom: 10px;
 `;
 
-const Lists = ({ moviesByKeys, movies, hasMore, setCurrentPage, sortedYears, selectedGenreIds }: IProps) => {
-    const [scrollPosition, setScrollPosition] = useState(0);
+const NoMovie =  styled.div`
+  height: 300px;
+  color: #fff;
+`;
+
+
+const Lists = ({
+                   moviesByKeys,
+                   fetchResponse,
+                   sortedYears,
+                   selectedGenreIds,
+                   setYears,
+                   setLoader,
+                   moviesByGenre,
+                   getGenreKey
+               }: IProps) => {
+
+    const [genreKey, setGenreKey] = useState<string>("");
+
+    const handleScrollUp = useCallback(() => {
+        setLoader(prev => ({ ...prev, showTopLoader: true }));
+
+        setYears(prev => {
+            const newTopYear = prev.topYear - 1;
+            fetchResponse(newTopYear);
+            return { ...prev, topYear: newTopYear };
+        });
+
+        setTimeout(() => {
+            window.scrollBy({ top: 5, behavior: "smooth" })
+        }, 1000)
+    }, [fetchResponse, setYears, setLoader])
+
+    const handleScrollDown = useCallback(() => {
+        setLoader(prev => ({ ...prev, showBottomLoader: true }));
+
+        setYears(prev => {
+            const newBottomYear = prev.bottomYear + 1;
+            fetchResponse(newBottomYear);
+            return { ...prev, bottomYear: newBottomYear };
+        });
+    }, [fetchResponse, setYears, setLoader])
+
+    const handleScroll = useCallback(() => {
+        if (selectedGenreIds.length) return;
+
+        const { scrollTop, clientHeight, scrollHeight } = document.documentElement
+
+        if (scrollTop === 0) {
+            handleScrollUp();
+
+        } else if (Math.trunc(scrollTop + clientHeight) === scrollHeight) {
+            handleScrollDown()
+        }
+
+    }, [handleScrollDown, handleScrollUp])
 
     useEffect(() => {
-        const handleScroll = () => setScrollPosition(window.scrollY);
         window.addEventListener('scroll', handleScroll);
 
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [handleScroll])
 
-    // console.log(scrollPosition)
-    // console.log("movies", movies)
+    useEffect(() => {
+        const updatedKey = getGenreKey(selectedGenreIds);
+        setGenreKey(updatedKey)
+    }, [selectedGenreIds])
 
     return (
         <Wrapper>
@@ -56,41 +113,37 @@ const Lists = ({ moviesByKeys, movies, hasMore, setCurrentPage, sortedYears, sel
                 <ScrollContainer className="infinite-scroll-container">
                     {
                         sortedYears.map(year => {
-                            const movies = moviesByKeys[year] || [];
+                            let movies: MovieResponse[];
+
+                            if (selectedGenreIds.length >= 1) {
+                                movies = moviesByGenre[genreKey]?.[year] ?? [];
+                            } else {
+                                movies = moviesByKeys[year] || [];
+                            }
+
 
                             return (
-                                <div className='year-movie-wrapper'>
+                                <div className='year-movie-wrapper' key={ year }>
                                     <YearHead> { year } </YearHead>
 
-                                    <Cards>
-                                        { movies.map(movie => {
-                                            const { genre_ids } = movie;
 
-                                            if (selectedGenreIds.length > 0) {
-                                                const filterFlag = selectedGenreIds.every(el => genre_ids.includes(el))
-
-                                                if (filterFlag) {
-                                                    return (
-                                                        <MovieCard key={ movie.id + movie['original_title'] }
-                                                                   details={ movie }/>
-                                                    )
-                                                }
-                                            } else {
+                                    {
+                                        movies.length ? <Cards>
+                                            { movies?.map(movie => {
                                                 return (
                                                     <MovieCard key={ movie.id + movie['original_title'] }
                                                                details={ movie }/>
                                                 )
+                                            })
                                             }
+                                        </Cards> : <NoMovie>No movie sorry!</NoMovie>
 
-                                        })
-                                        }
-                                    </Cards>
+                                    }
+
                                 </div>
                             )
                         })
                     }
-
-                    { hasMore && <Loader/> }
                 </ScrollContainer>
             </Layout>
         </Wrapper>

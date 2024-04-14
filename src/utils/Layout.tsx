@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 const Wrap = styled.div`
   padding: 0 200px;
+  overflow: hidden;
 `;
 
 const Layout = ({ children, className = "" }: { children: ReactNode, className?: string }) => {

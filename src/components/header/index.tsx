@@ -3,15 +3,21 @@ import styled from "styled-components";
 import logo from '../../assets/images/logo.png';
 import Layout from "../../utils/Layout";
 import Filters from "../filters/Filters";
-import { Genre, GenreResponse } from "../../def/response";
+import { Genre } from "../../def/response";
 
 const Wrapper = styled.div`
   background: #242424;
   padding: 10px 0 20px 0;
+  position: fixed;
+  overflow: hidden;
+  z-index: 10;
+  top: 0;
+  width: 100%;
 
   .layout-wrapper {
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   img {
@@ -37,7 +43,7 @@ const Header = ({
         <Wrapper>
             <Layout className='layout-wrapper'>
                 <img src={ logo } alt='movie fix-logo'/>
-                <div>
+                <div className='filter-wrapper'>
                     <Filters genres={ genres } setSelectedGenreIds={ setSelectedGenreIds }/>
                 </div>
             </Layout>

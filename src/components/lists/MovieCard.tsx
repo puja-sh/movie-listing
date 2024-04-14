@@ -35,11 +35,11 @@ const ImageWrapper = styled.div`
 
   .movie-content {
     position: absolute;
-    color: sienna;
-    background: white;
+    color: #dc906d;
+    background: #000000;
     bottom: -20px;
     max-height: 0;
-    height: 0;
+    height: 0px;
     width: 100%;
     text-align: center;
     transition: all 0.7s ease-in-out;
@@ -51,28 +51,56 @@ const ImageWrapper = styled.div`
       font-size: 14px;
       margin-top: 7px;
     }
+
+
+    .movie-detail-wrapper {
+      text-align: left;
+      overflow: hidden;
+      padding: 0 5px;
+
+      .content {
+        font-size: 12px;
+        color: #eaeaea;
+        margin-top: 5px;
+
+        &.scroll {
+          height: 100px;
+          overflow-y: scroll;
+
+          //display: inline-block;
+        }
+      }
+    }
+
+
   }
 
   &:hover {
     .movie-content {
-      max-height: 150px;
-      height: 80px;
+      max-height: 180px;
+      height: 180px;
     }
   }
 `;
 
 const MovieCard = ({ details }: IProps) => {
-    const { original_title, poster_path, vote_average } = details;
-
+    const { original_title, poster_path, vote_average, overview } = details;
+    const relativeUrl = process.env.REACT_APP_IMAGE_URL;
     return (
         <Wrapper>
             <ImageWrapper>
                 <div className='movie-content'>
                     { original_title }
-                    <p className='ratings'> Ratings: { Math.ceil(vote_average) } </p>
+
+                    <div className='movie-detail-wrapper'>
+                        <p className='content'> Ratings: { Math.ceil(vote_average) } ✰ </p>
+                        <p className='content scroll'>  { overview } </p>
+                    </div>
+
                 </div>
 
-                <img src={ `https://image.tmdb.org/t/p/original/${ poster_path }` } className='poster' loading='lazy'/>
+                <img src={ `${ relativeUrl }/${ poster_path }` } className='poster'
+                     alt={ original_title } loading='lazy'/>
             </ImageWrapper>
         </Wrapper>
     )

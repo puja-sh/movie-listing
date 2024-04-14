@@ -1,27 +1,41 @@
 import React from 'react';
 import styled from "styled-components";
 
-const Load = styled.div`
-  display: inline-block;
-  width: 80px;
-  height: 80px;
-  border: 8px solid #f3f3f3;
-  border-radius: 50%;
-  border-top-color: #3498db;
-  animation: spin 1s linear infinite;
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
+const Wrapper = styled.div<{ show: boolean }>`
+  width: 100%;
+  height: 5px;
+  background: #151515;
+  position: relative;
+  visibility: ${ ({ show }) => show ? 'visible' : 'hidden' };
+  margin-bottom: 10px;
 `;
 
-const Loader = () => {
+const Load = styled.div`
+  display: inline-block;
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(135deg, #d0d0d0 0%, #000000 100%);
+  position: absolute;
+  animation: spin 1s linear infinite;
+  border-radius: 10px;
+
+  @keyframes spin {
+    from {
+      transform: translateX(-80%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+`;
+
+const Loader = ({ show }: { show: boolean }) => {
+
     return (
-        <Load/>
+        <Wrapper show={ show }>
+            <Load/>
+        </Wrapper>
     )
 }
 

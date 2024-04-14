@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Genre } from "../../def/response";
 
 const Wrapper = styled.div`
-
+  //overflow: hidden;
 `;
 
 const Label = styled.label`
@@ -67,7 +67,7 @@ const Filters = ({
 
             {
                 genres.map(item => (
-                    <Label>
+                    <Label key={item.id}>
                         <input type='checkbox' onChange={ () => checkHandler(item.id) }/>
                         <p>{ item.name }</p>
                     </Label>
